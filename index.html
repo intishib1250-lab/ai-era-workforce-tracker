@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI-Era Workforce Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:    oklch(0.165 0.006 60);
+    --bg2:   oklch(0.198 0.006 60);
+    --bg3:   oklch(0.235 0.006 60);
+    --line:  oklch(0.32 0.006 60);
+    --line2: oklch(0.27 0.006 60);
+    --ink:   oklch(0.93 0.006 75);
+    --ink2:  oklch(0.74 0.006 75);
+    --ink3:  oklch(0.56 0.006 75);
+    --red:   oklch(0.64 0.185 25);
+    --red-d: oklch(0.40 0.10 25);
+    --amber: oklch(0.79 0.135 75);
+    --amber-d:oklch(0.46 0.08 75);
+    --gray:  oklch(0.62 0.006 75);
+    --serif: "Newsreader", Georgia, serif;
+    --sans:  "IBM Plex Sans", system-ui, sans-serif;
+    --mono:  "IBM Plex Mono", ui-monospace, monospace;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    font-size:15px; line-height:1.5;
+    background-image:radial-gradient(120% 80% at 50% -10%, oklch(0.21 0.01 60) 0%, var(--bg) 55%);
+    background-attachment:fixed;
+  }
+  .page{ max-width:1280px; margin:0 auto; padding:0 40px 72px; }
+
+  /* ---------- Masthead ---------- */
+  .masthead{ padding:40px 0 0; }
+  .mast-top{ display:flex; justify-content:space-between; align-items:baseline;
+    border-top:2px solid var(--ink); padding-top:11px; }
+  .kicker{ font-family:var(--mono); font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink2); font-weight:500; }
+  .kicker.dim{ color:var(--ink3); }
+  .mast-main{ display:grid; grid-template-columns:1.05fr 1fr; gap:48px; align-items:end;
+    padding:26px 0 30px; }
+  .mast-title{ font-family:var(--serif); font-weight:500; font-size:64px; line-height:0.98;
+    letter-spacing:-0.015em; }
+  .dek{ font-family:var(--serif); font-size:18.5px; line-height:1.5; color:var(--ink2);
+    max-width:46ch; padding-bottom:6px; }
+  .dek em{ color:var(--ink); font-style:italic; }
+  .mast-rule{ height:1px; background:var(--line);
+    box-shadow:0 3px 0 -2px var(--line); }
+
+  /* ---------- KPI row ---------- */
+  .kpi-row{ display:grid; grid-template-columns:repeat(6,1fr); margin-top:1px; }
+  .kpi{ padding:20px 20px 18px; border-right:1px solid var(--line2);
+    border-bottom:1px solid var(--line2); position:relative; }
+  .kpi:first-child{ padding-left:0; }
+  .kpi:nth-child(6){ border-right:none; padding-right:0; }
+  .kpi-label{ font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink3); min-height:2.6em; line-height:1.3; }
+  .kpi-value{ display:flex; align-items:baseline; gap:3px; margin:13px 0 9px; }
+  .kpi-num{ font-family:var(--mono); font-weight:500; font-size:33px; letter-spacing:-0.02em;
+    line-height:1; color:var(--ink); }
+  .kpi-affix{ font-family:var(--mono); font-size:18px; color:var(--ink3); font-weight:500; }
+  .kpi-note{ font-size:11.5px; color:var(--ink3); line-height:1.35; }
+  .kpi.tone-red .kpi-num{ color:var(--red); }
+  .kpi.tone-red::before, .kpi.tone-amber::before{ content:""; position:absolute; top:0; left:0;
+    width:18px; height:2px; }
+  .kpi:first-child.tone-red::before, .kpi:first-child.tone-amber::before{ left:0; }
+  .kpi.tone-red::before{ background:var(--red); }
+  .kpi.tone-amber .kpi-num{ color:var(--amber); }
+  .kpi.tone-amber::before{ background:var(--amber); }
+
+  /* ---------- Charts ---------- */
+  .charts{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:34px; }
+  .chart-card{ border:1px solid var(--line2); background:
+      linear-gradient(180deg, oklch(0.205 0.006 60), var(--bg2)); padding:22px 22px 18px; }
+  .chart-card figcaption{ display:flex; flex-direction:column; gap:3px; margin-bottom:6px; }
+  .chart-card h3{ font-family:var(--serif); font-weight:500; font-size:22px; letter-spacing:-0.01em; }
+  .cap-sub{ font-family:var(--mono); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--ink3); }
+  .chart-svg{ width:100%; height:auto; display:block; margin-top:6px; overflow:visible; }
+  .grid{ stroke:var(--line2); stroke-width:1; }
+  .axis-num{ font-family:var(--mono); font-size:10px; fill:var(--ink3); }
+  .axis-cat{ font-family:var(--mono); font-size:11px; fill:var(--ink2); letter-spacing:.03em; }
+  .bar-total{ fill:oklch(0.55 0.006 75); }
+  .bar-ai{ fill:var(--red); }
+  .bar-label{ font-family:var(--mono); font-size:11px; fill:var(--ink2); font-weight:500; }
+  .bar-label.red{ fill:var(--red); }
+  .line-stroke{ stroke:var(--red); stroke-width:2.25; stroke-linejoin:round; stroke-linecap:round; }
+  .line-dot{ fill:var(--bg); stroke:var(--red); stroke-width:2.25; }
+  .legend{ display:flex; gap:20px; margin-top:14px; padding-top:13px; border-top:1px solid var(--line2); }
+  .lg{ display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--ink2); }
+  .sw{ width:11px; height:11px; display:inline-block; flex:none; }
+  .sw-total{ background:oklch(0.55 0.006 75); }
+  .sw-ai{ background:var(--red); }
+  .sw-line{ background:var(--red); height:3px; }
+
+  /* ---------- Table ---------- */
+  .table-block{ margin-top:38px; }
+  .table-bar{ display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap;
+    gap:16px; border-bottom:1px solid var(--line); padding-bottom:14px; }
+  .section-h{ font-family:var(--serif); font-weight:500; font-size:30px; letter-spacing:-0.01em; }
+  .controls{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .pills{ display:flex; gap:0; border:1px solid var(--line); }
+  .pill{ font-family:var(--mono); font-size:11.5px; letter-spacing:.04em; text-transform:uppercase;
+    background:transparent; color:var(--ink2); border:none; border-right:1px solid var(--line);
+    padding:8px 14px; cursor:pointer; display:flex; align-items:center; gap:7px; transition:.14s; }
+  .pill:last-child{ border-right:none; }
+  .pill:hover{ background:var(--bg2); color:var(--ink); }
+  .pill.on{ background:var(--ink); color:var(--bg); }
+  .pill-n{ font-size:10px; opacity:.6; }
+  .pill.on .pill-n{ opacity:.55; }
+  .search{ display:flex; align-items:center; gap:8px; border:1px solid var(--line);
+    padding:7px 12px; color:var(--ink3); background:var(--bg2); }
+  .search input{ background:none; border:none; outline:none; color:var(--ink); font-family:var(--sans);
+    font-size:13px; width:160px; }
+  .search input::placeholder{ color:var(--ink3); }
+  .search .clear{ background:none; border:none; color:var(--ink3); cursor:pointer; font-size:16px;
+    line-height:1; padding:0; }
+  .search:focus-within{ border-color:var(--ink2); color:var(--ink2); }
+
+  .table-scroll{ overflow-x:auto; }
+  .ledger{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .ledger thead th{ font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink3); font-weight:500; text-align:left; padding:13px 14px; cursor:pointer;
+    border-bottom:1px solid var(--line); white-space:nowrap; user-select:none; transition:.12s; }
+  .ledger thead th:first-child{ padding-left:2px; }
+  .ledger thead th.al-right{ text-align:right; }
+  .ledger thead th.al-right span{ flex-direction:row-reverse; }
+  .ledger thead th span{ display:inline-flex; align-items:center; gap:6px; }
+  .ledger thead th:hover{ color:var(--ink); }
+  .ledger thead th.sorted{ color:var(--ink); }
+  .caret{ width:0; height:0; border-left:3.5px solid transparent; border-right:3.5px solid transparent;
+    opacity:0; }
+  .caret.up{ border-bottom:5px solid currentColor; opacity:1; }
+  .caret.down{ border-top:5px solid currentColor; opacity:1; }
+
+  .ledger tbody td{ padding:12px 14px; border-bottom:1px solid var(--line2); vertical-align:middle;
+    color:var(--ink2); }
+  .ledger tbody td:first-child{ padding-left:2px; }
+  .ledger tbody tr:hover{ background:oklch(0.205 0.006 60); }
+  .c-name-inner{ display:flex; align-items:center; gap:11px; }
+  .cn-name{ font-weight:500; color:var(--ink); font-size:14px; }
+  .logo-chip{ position:relative; width:24px; height:24px; flex:none; border-radius:6px;
+    background:oklch(0.95 0.004 75); display:inline-flex; align-items:center; justify-content:center;
+    overflow:hidden; box-shadow:0 0 0 1px oklch(1 0 0 / 0.04), 0 1px 2px oklch(0 0 0 / 0.3); }
+  .logo-chip img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:4px; }
+  .mono-letter{ font-family:var(--mono); font-size:11px; font-weight:600; color:oklch(0.34 0.01 75);
+    letter-spacing:0; }
+  .num{ font-family:var(--mono); text-align:right; font-size:12.5px; color:var(--ink2);
+    font-variant-numeric:tabular-nums; }
+  .num.strong{ color:var(--ink); font-weight:500; }
+  .c-peak{ font-size:12px; color:var(--ink3); }
+
+  .sec{ font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; text-transform:uppercase;
+    padding:2px 0; color:var(--ink3); }
+  .sec::before{ content:""; display:inline-block; width:6px; height:6px; margin-right:7px;
+    vertical-align:middle; }
+  .sec-tech::before{ background:oklch(0.7 0.09 230); }
+  .sec-finance::before{ background:oklch(0.74 0.11 150); }
+  .sec-media::before{ background:oklch(0.74 0.1 300); }
+
+  .pct{ display:flex; align-items:center; gap:9px; min-width:108px; }
+  .pct-num{ font-family:var(--mono); font-size:12px; color:var(--ink2); width:34px;
+    font-variant-numeric:tabular-nums; }
+  .pct-bar{ flex:1; height:4px; background:var(--line2); position:relative; }
+  .pct-bar i{ position:absolute; inset:0 auto 0 0; background:var(--ink3); }
+  .pct-na{ font-family:var(--mono); color:var(--ink3); }
+
+  .badge{ display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px;
+    letter-spacing:.02em; padding:3px 9px 3px 8px; border:1px solid; border-radius:999px; }
+  .badge .dot{ width:6px; height:6px; border-radius:50%; flex:none; }
+  .badge em{ font-style:normal; opacity:.6; font-size:9.5px; margin-left:1px; }
+  .badge-yes{ color:var(--red); border-color:var(--red-d); background:oklch(0.64 0.185 25 / 0.07); }
+  .badge-yes .dot{ background:var(--red); }
+  .badge-partial{ color:var(--amber); border-color:var(--amber-d); background:oklch(0.79 0.135 75 / 0.07); }
+  .badge-partial .dot{ background:var(--amber); }
+  .badge-no{ color:var(--ink3); border-color:var(--line); }
+  .badge-no .dot{ background:var(--ink3); }
+  .badge.mini{ padding:1px 7px 1px 6px; font-size:10px; }
+
+  .empty{ padding:40px 4px; color:var(--ink3); font-family:var(--mono); font-size:13px; }
+  .table-foot{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; padding:16px 2px 0;
+    font-size:12px; color:var(--ink3); font-family:var(--mono); }
+  .table-foot b{ color:var(--ink); }
+  .legend-inline{ display:flex; gap:16px; margin-left:auto; flex-wrap:wrap; align-items:center; }
+  .legend-inline .lg{ font-family:var(--mono); font-size:11px; color:var(--ink3); gap:6px; }
+
+  /* ---------- Footer ---------- */
+  .page-foot{ margin-top:46px; border-top:1px solid var(--line); padding-top:20px;
+    display:flex; flex-direction:column; gap:14px; }
+  .src{ display:flex; align-items:center; gap:0; flex-wrap:wrap; }
+  .src-label{ font-family:var(--mono); font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink2); margin-right:16px; }
+  .src-item{ font-family:var(--mono); font-size:11.5px; color:var(--ink3); padding:0 14px;
+    border-left:1px solid var(--line2); }
+  .src-item:first-of-type{ border-left:none; padding-left:0; }
+  .disclaimer{ font-size:11.5px; color:var(--ink3); max-width:74ch; line-height:1.5; }
+
+  @media (max-width:1080px){
+    .page{ padding:0 24px 60px; }
+    .mast-main{ grid-template-columns:1fr; gap:20px; }
+    .mast-title{ font-size:48px; }
+    .kpi-row{ grid-template-columns:repeat(3,1fr); }
+    .kpi:nth-child(3){ border-right:none; padding-right:0; }
+    .kpi:nth-child(4){ padding-left:0; }
+    .charts{ grid-template-columns:1fr; }
+    .legend-inline{ width:100%; margin-left:0; }
+  }
+  @media (max-width:640px){
+    .kpi-row{ grid-template-columns:repeat(2,1fr); }
+    .mast-title{ font-size:38px; }
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- ===== DATA ===== -->
+  <script>
+/* AI-Era Workforce Tracker — datasets */
+window.COMPANIES = [
+  // ---- TECH ----
+  {name:"Amazon",ticker:"AMZN",sector:"Tech",hc2020:1298000,hc2022:1541000,hc2024:1556000,hc2026:1576000,cuts:60000,pctWf:4,peak:"18,000 — Jan 2023",ai:"Partial"},
+  {name:"Alphabet / Google",ticker:"GOOG",sector:"Tech",hc2020:135301,hc2022:190234,hc2024:183323,hc2026:190820,cuts:17000,pctWf:9,peak:"12,000 — Jan 2023",ai:"Partial"},
+  {name:"Microsoft",ticker:"MSFT",sector:"Tech",hc2020:163000,hc2022:221000,hc2024:228000,hc2026:228000,cuts:33000,pctWf:14,peak:"10,000 — Jan 2023",ai:"Yes"},
+  {name:"Meta Platforms",ticker:"META",sector:"Tech",hc2020:58604,hc2022:86482,hc2024:74067,hc2026:78865,cuts:23000,pctWf:31,peak:"10,000 — Mar 2023",ai:"Yes"},
+  {name:"Salesforce",ticker:"CRM",sector:"Tech",hc2020:49703,hc2022:73541,hc2024:72682,hc2026:76453,cuts:14000,pctWf:19,peak:"7,000 — Jan 2023",ai:"Yes"},
+  {name:"Oracle",ticker:"ORCL",sector:"Tech",hc2020:135000,hc2022:143000,hc2024:159000,hc2026:159000,cuts:36000,pctWf:23,peak:"~30,000 — 2025–26",ai:"Yes"},
+  {name:"Adobe",ticker:"ADBE",sector:"Tech",hc2020:22516,hc2022:29239,hc2024:30709,hc2026:31360,cuts:900,pctWf:3,peak:"900 — Jan 2025",ai:"Partial"},
+  {name:"Apple",ticker:"AAPL",sector:"Tech",hc2020:147000,hc2022:164000,hc2024:164000,hc2026:166000,cuts:900,pctWf:1,peak:"600 — Apr 2024",ai:"No"},
+  {name:"Dell Technologies",ticker:"DELL",sector:"Tech",hc2020:165000,hc2022:133000,hc2024:120000,hc2026:108000,cuts:29500,pctWf:25,peak:"13,000 — FY2024",ai:"Yes"},
+  {name:"HP Inc.",ticker:"HPQ",sector:"Tech",hc2020:53000,hc2022:58000,hc2024:58000,hc2026:55000,cuts:13500,pctWf:23,peak:"9,500 — FY2023 plan",ai:"Yes"},
+  {name:"Cisco Systems",ticker:"CSCO",sector:"Tech",hc2020:77500,hc2022:83300,hc2024:90400,hc2026:86200,cuts:17000,pctWf:19,peak:"5,600 — Aug 2024",ai:"Yes"},
+  {name:"Hewlett Packard Enterprise",ticker:"HPE",sector:"Tech",hc2020:59400,hc2022:60200,hc2024:61000,hc2026:67000,cuts:7500,pctWf:12,peak:"5,000 — 2023",ai:"Yes"},
+  {name:"NVIDIA",ticker:"NVDA",sector:"Tech",hc2020:13775,hc2022:22473,hc2024:32000,hc2026:36000,cuts:1200,pctWf:4,peak:"~1,200 — 2023",ai:"No"},
+  {name:"Intel",ticker:"INTC",sector:"Tech",hc2020:110800,hc2022:131900,hc2024:108900,hc2026:85100,cuts:36000,pctWf:27,peak:"15,000 — Aug 2024",ai:"Partial"},
+  {name:"IBM",ticker:"IBM",sector:"Tech",hc2020:345900,hc2022:288300,hc2024:293400,hc2026:286800,cuts:9000,pctWf:3,peak:"3,900 — Jan 2024",ai:"Yes"},
+  {name:"Cognizant",ticker:"CTSH",sector:"Tech",hc2020:283100,hc2022:355300,hc2024:336800,hc2026:351600,cuts:15000,pctWf:4,peak:"~15,000 — 2023–24",ai:"Partial"},
+  {name:"CDW",ticker:"CDW",sector:"Tech",hc2020:9900,hc2022:13900,hc2024:15100,hc2026:16200,cuts:0,pctWf:0,peak:"No notable layoffs",ai:"No"},
+  {name:"Workday",ticker:"WDAY",sector:"Tech",hc2020:12200,hc2022:15800,hc2024:20500,hc2026:21000,cuts:2250,pctWf:11,peak:"1,750 — Sep 2025",ai:"Yes"},
+  {name:"Qualcomm",ticker:"QCOM",sector:"Tech",hc2020:41000,hc2022:51000,hc2024:49000,hc2026:52000,cuts:4000,pctWf:8,peak:"3,726 — 2023",ai:"No"},
+  {name:"Broadcom",ticker:"AVGO",sector:"Tech",hc2020:21000,hc2022:20000,hc2024:37000,hc2026:33000,cuts:4000,pctWf:11,peak:"~3,000 — Nov 2023",ai:"No"},
+  {name:"Advanced Micro Devices",ticker:"AMD",sector:"Tech",hc2020:12600,hc2022:25000,hc2024:28000,hc2026:31000,cuts:1400,pctWf:5,peak:"~1,000 — Nov 2024",ai:"Partial"},
+  {name:"Texas Instruments",ticker:"TXN",sector:"Tech",hc2020:30000,hc2022:33000,hc2024:34000,hc2026:34000,cuts:400,pctWf:1,peak:"400 — Sep 2025",ai:"No"},
+  {name:"Snap",ticker:"SNAP",sector:"Tech",hc2020:3863,hc2022:6600,hc2024:4919,hc2026:5100,cuts:2600,pctWf:40,peak:"~1,000 — Apr 2026",ai:"Yes"},
+  {name:"Twitter / X",ticker:"X",sector:"Tech",hc2020:5500,hc2022:7500,hc2024:2800,hc2026:2800,cuts:6000,pctWf:80,peak:"6,000 — Nov 2022",ai:"No"},
+  {name:"Dropbox",ticker:"DBX",sector:"Tech",hc2020:2900,hc2022:3118,hc2024:2204,hc2026:2100,cuts:1050,pctWf:34,peak:"528 — Oct 2024",ai:"Yes"},
+  // ---- FINANCE ----
+  {name:"JPMorgan Chase",ticker:"JPM",sector:"Finance",hc2020:255351,hc2022:293723,hc2024:317000,hc2026:318512,cuts:2000,pctWf:1,peak:"~1,000 — 2023",ai:"Partial"},
+  {name:"Bank of America",ticker:"BAC",sector:"Finance",hc2020:213000,hc2022:217000,hc2024:213200,hc2026:213000,cuts:5000,pctWf:2,peak:"~4,000 — Apr–Jun 2023",ai:"Partial"},
+  {name:"Citigroup",ticker:"C",sector:"Finance",hc2020:203000,hc2022:238000,hc2024:229000,hc2026:226000,cuts:27000,pctWf:11,peak:"20,000 — Jan 2024",ai:"Partial"},
+  {name:"Fannie Mae",ticker:"FNMA",sector:"Finance",hc2020:7700,hc2022:8000,hc2024:8200,hc2026:7000,cuts:800,pctWf:10,peak:"~700 — Apr 2025",ai:"No"},
+  {name:"Wells Fargo",ticker:"WFC",sector:"Finance",hc2020:268531,hc2022:238000,hc2024:226000,hc2026:205000,cuts:20000,pctWf:8,peak:"~7,000 — 2023",ai:"Partial"},
+  {name:"Goldman Sachs",ticker:"GS",sector:"Finance",hc2020:40500,hc2022:48500,hc2024:46500,hc2026:47400,cuts:6500,pctWf:13,peak:"3,200 — Jan 2023",ai:"Partial"},
+  {name:"Morgan Stanley",ticker:"MS",sector:"Finance",hc2020:68000,hc2022:82000,hc2024:80000,hc2026:83000,cuts:6000,pctWf:7,peak:"3,000 — May 2023",ai:"Partial"},
+  {name:"Freddie Mac",ticker:"FMCC",sector:"Finance",hc2020:7400,hc2022:7839,hc2024:8103,hc2026:8100,cuts:300,pctWf:4,peak:"~200 — 2024",ai:"No"},
+  {name:"MetLife",ticker:"MET",sector:"Finance",hc2020:49000,hc2022:43000,hc2024:45000,hc2026:45000,cuts:1000,pctWf:2,peak:"~500 — 2024",ai:"No"},
+  {name:"Prudential Financial",ticker:"PRU",sector:"Finance",hc2020:40000,hc2022:39854,hc2024:38196,hc2026:36824,cuts:1200,pctWf:3,peak:"634 — 2024",ai:"No"},
+  {name:"American Express",ticker:"AXP",sector:"Finance",hc2020:64500,hc2022:77300,hc2024:75100,hc2026:76800,cuts:0,pctWf:0,peak:"No notable layoffs",ai:"No"},
+  {name:"Capital One Financial",ticker:"COF",sector:"Finance",hc2020:51900,hc2022:50767,hc2024:60748,hc2026:76300,cuts:2250,pctWf:4,peak:"1,139 — Feb 2026",ai:"No"},
+  {name:"Allstate",ticker:"ALL",sector:"Finance",hc2020:45000,hc2022:53000,hc2024:53400,hc2026:53000,cuts:4500,pctWf:8,peak:"~3,600 — 2023",ai:"Partial"},
+  {name:"Progressive",ticker:"PGR",sector:"Finance",hc2020:38900,hc2022:55200,hc2024:66308,hc2026:70000,cuts:0,pctWf:0,peak:"No notable layoffs",ai:"No"},
+  {name:"Travelers Companies",ticker:"TRV",sector:"Finance",hc2020:30000,hc2022:32800,hc2024:34512,hc2026:34000,cuts:0,pctWf:0,peak:"No notable layoffs",ai:"No"},
+  {name:"TIAA",ticker:"—",sector:"Finance",hc2020:16000,hc2022:15000,hc2024:13500,hc2026:13200,cuts:1500,pctWf:10,peak:"~500 — 2023–24",ai:"No"},
+  {name:"Northwestern Mutual",ticker:"—",sector:"Finance",hc2020:32000,hc2022:34800,hc2024:36618,hc2026:37500,cuts:500,pctWf:1,peak:"~300 — 2023",ai:"No"},
+  {name:"USAA",ticker:"—",sector:"Finance",hc2020:36000,hc2022:37000,hc2024:38000,hc2026:38000,cuts:1500,pctWf:4,peak:"~1,000 — 2023",ai:"No"},
+  {name:"Liberty Mutual Insurance",ticker:"—",sector:"Finance",hc2020:45000,hc2022:47000,hc2024:43000,hc2026:45000,cuts:1100,pctWf:2,peak:"850 — 2023",ai:"No"},
+  {name:"Hartford Financial Services",ticker:"HIG",sector:"Finance",hc2020:18500,hc2022:18800,hc2024:19100,hc2026:19100,cuts:0,pctWf:0,peak:"No notable layoffs",ai:"No"},
+  {name:"State Farm Insurance",ticker:"—",sector:"Finance",hc2020:58000,hc2022:60000,hc2024:62000,hc2026:62000,cuts:2500,pctWf:4,peak:"~750 — 2023",ai:"No"},
+  {name:"Visa",ticker:"V",sector:"Finance",hc2020:21500,hc2022:26500,hc2024:31600,hc2026:34000,cuts:1400,pctWf:4,peak:"1,400 — 2024",ai:"No"},
+  {name:"Mastercard",ticker:"MA",sector:"Finance",hc2020:21000,hc2022:29900,hc2024:35300,hc2026:39800,cuts:2400,pctWf:7,peak:"1,400 — Jan 2026",ai:"No"},
+  {name:"BlackRock",ticker:"BLK",sector:"Finance",hc2020:16500,hc2022:18400,hc2024:21800,hc2026:24900,cuts:1400,pctWf:6,peak:"600 — Jan 2024",ai:"Partial"},
+  {name:"Charles Schwab",ticker:"SCHW",sector:"Finance",hc2020:32000,hc2022:35300,hc2024:32300,hc2026:33000,cuts:5500,pctWf:16,peak:"2,200 — Nov 2023",ai:"Partial"},
+  {name:"Fidelity National Info (FIS)",ticker:"FIS",sector:"Finance",hc2020:55000,hc2022:62000,hc2024:51569,hc2026:44000,cuts:3500,pctWf:6,peak:"2,600 — Feb 2023",ai:"Partial"},
+  {name:"Fiserv",ticker:"FI",sector:"Finance",hc2020:41000,hc2022:40000,hc2024:42000,hc2026:40200,cuts:1500,pctWf:4,peak:"~1,500 — 2024",ai:"No"},
+  {name:"PayPal",ticker:"PYPL",sector:"Finance",hc2020:23200,hc2022:29900,hc2024:22000,hc2026:21900,cuts:9000,pctWf:30,peak:"2,500 — Jan 2024",ai:"No"},
+  // ---- MEDIA ----
+  {name:"Netflix",ticker:"NFLX",sector:"Media",hc2020:9400,hc2022:12800,hc2024:14000,hc2026:16000,cuts:550,pctWf:4,peak:"150 — May 2023",ai:"Partial"},
+  {name:"Disney",ticker:"DIS",sector:"Media",hc2020:203000,hc2022:220000,hc2024:233000,hc2026:220000,cuts:9200,pctWf:4,peak:"7,000 — Feb 2023",ai:"Partial"},
+  {name:"Paramount / Skydance",ticker:"PARA",sector:"Media",hc2020:23000,hc2022:24500,hc2024:18600,hc2026:18000,cuts:7500,pctWf:40,peak:"2,000 — Aug 2024",ai:"No"},
+  {name:"Spotify",ticker:"SPOT",sector:"Media",hc2020:5584,hc2022:9808,hc2024:7242,hc2026:7261,cuts:2500,pctWf:35,peak:"1,500 — Dec 2023",ai:"Partial"},
+  {name:"BuzzFeed",ticker:"BZFD",sector:"Media",hc2020:1700,hc2022:1522,hc2024:400,hc2026:670,cuts:700,pctWf:50,peak:"180 — Apr 2023",ai:"No"},
+  {name:"Vice Media",ticker:"—",sector:"Media",hc2020:3000,hc2022:3000,hc2024:300,hc2026:1800,cuts:1700,pctWf:85,peak:"Ch.11 bankruptcy — May 2023",ai:"No"},
+  {name:"Warner Bros. Discovery",ticker:"WBD",sector:"Media",hc2020:36000,hc2022:40000,hc2024:35101,hc2026:35500,cuts:6000,pctWf:17,peak:"~1,000 — Jul 2024",ai:"No"},
+];
+
+window.KPIS = [
+  { label:"Tech cuts · 2023–26",        value:"540K", suffix:"+", note:"25 firms tracked",          tone:"plain" },
+  { label:"Finance cuts · 2023–26",     value:"160K", suffix:"≈", pre:true, note:"28 firms tracked", tone:"plain" },
+  { label:"Media cuts · 2023–26",       value:"53K",  suffix:"+", note:"7 firms tracked",            tone:"plain" },
+  { label:"AI-attributed · 2026 YTD",   value:"87,714", note:"Challenger Gray, through May",          tone:"red" },
+  { label:"AI-attributed · 2023–25",    value:"71,825", note:"cumulative, 3-yr",                      tone:"red" },
+  { label:"Cut-and-invest firms",       value:"19",   note:"laying off while hiring AI talent",       tone:"amber" },
+];
+
+window.BARS = [
+  { year:"2022", total:93,  ai:0 },
+  { year:"2023", total:264, ai:4 },
+  { year:"2024", total:153, ai:17 },
+  { year:"2025", total:124, ai:51 },
+];
+
+window.LINE = [
+  { label:"2023",    pct:1 },
+  { label:"2024",    pct:5 },
+  { label:"2025",    pct:13 },
+  { label:"Q1 '26",  pct:27 },
+  { label:"May '26", pct:40 },
+];
+
+window.SOURCES = ["Challenger, Gray & Christmas", "Layoffs.fyi", "SEC filings", "Bloomberg", "Reuters", "WSJ"];
+  </script>
+
+  <!-- ===== APP ===== -->
+  <script type="text/babel">
+const { useState, useMemo } = React;
+
+/* ---- Charts ---- */
+function BarChart({ data }) {
+  const W = 620, H = 320;
+  const padL = 44, padR = 16, padT = 28, padB = 46;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const max = 280;
+  const ticks = [0, 70, 140, 210, 280];
+  const n = data.length;
+  const slot = plotW / n;
+  const groupW = slot * 0.54;
+  const barW = groupW / 2 - 3;
+  const y = v => padT + plotH - (v / max) * plotH;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="chart-svg" role="img" aria-label="Annual tech layoffs">
+      {ticks.map(t => (
+        <g key={t}>
+          <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="grid" />
+          <text x={padL - 10} y={y(t) + 4} className="axis-num" textAnchor="end">{t}</text>
+        </g>
+      ))}
+      {data.map((d, i) => {
+        const cx = padL + slot * i + slot / 2;
+        const x0 = cx - groupW / 2;
+        return (
+          <g key={d.year}>
+            <rect x={x0} y={y(d.total)} width={barW} height={padT + plotH - y(d.total)} className="bar-total" />
+            <rect x={x0 + barW + 6} y={y(d.ai)} width={barW} height={padT + plotH - y(d.ai)} className="bar-ai" />
+            <text x={x0 + barW / 2} y={y(d.total) - 7} className="bar-label" textAnchor="middle">{d.total}</text>
+            {d.ai > 0 && <text x={x0 + barW + 6 + barW / 2} y={y(d.ai) - 7} className="bar-label red" textAnchor="middle">{d.ai}</text>}
+            <text x={cx} y={H - padB + 22} className="axis-cat" textAnchor="middle">{d.year}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function LineChart({ data }) {
+  const W = 620, H = 320;
+  const padL = 44, padR = 20, padT = 28, padB = 46;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const max = 40;
+  const ticks = [0, 10, 20, 30, 40];
+  const n = data.length;
+  const x = i => padL + (plotW / (n - 1)) * i;
+  const y = v => padT + plotH - (v / max) * plotH;
+  const pts = data.map((d, i) => [x(i), y(d.pct)]);
+  const linePath = pts.map((p, i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(" ");
+  const areaPath = linePath + ` L ${x(n - 1)} ${padT + plotH} L ${padL} ${padT + plotH} Z`;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="chart-svg" role="img" aria-label="AI-attributed share of cuts">
+      {ticks.map(t => (
+        <g key={t}>
+          <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="grid" />
+          <text x={padL - 10} y={y(t) + 4} className="axis-num" textAnchor="end">{t}%</text>
+        </g>
+      ))}
+      <defs>
+        <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--red)" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="var(--red)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={areaPath} fill="url(#lineFill)" />
+      <path d={linePath} className="line-stroke" fill="none" />
+      {pts.map((p, i) => (
+        <g key={i}>
+          <circle cx={p[0]} cy={p[1]} r="4.5" className="line-dot" />
+          <text x={p[0]} y={p[1] - 14} className="bar-label red" textAnchor="middle">{data[i].pct}%</text>
+          <text x={p[0]} y={H - padB + 22} className="axis-cat" textAnchor="middle">{data[i].label}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/* ---- App ---- */
+const SECTORS = ["All", "Tech", "Finance", "Media"];
+const AI_RANK = { Yes: 3, Partial: 2, No: 1 };
+
+const DOMAINS = {
+  "Amazon":"amazon.com","Alphabet / Google":"google.com","Microsoft":"microsoft.com",
+  "Meta Platforms":"meta.com","Salesforce":"salesforce.com","Oracle":"oracle.com",
+  "Adobe":"adobe.com","Apple":"apple.com","Dell Technologies":"dell.com","HP Inc.":"hp.com",
+  "Cisco Systems":"cisco.com","Hewlett Packard Enterprise":"hpe.com","NVIDIA":"nvidia.com",
+  "Intel":"intel.com","IBM":"ibm.com","Cognizant":"cognizant.com","CDW":"cdw.com",
+  "Workday":"workday.com","Qualcomm":"qualcomm.com","Broadcom":"broadcom.com",
+  "Advanced Micro Devices":"amd.com","Texas Instruments":"ti.com","Snap":"snap.com",
+  "Twitter / X":"x.com","Dropbox":"dropbox.com",
+  "JPMorgan Chase":"jpmorganchase.com","Bank of America":"bankofamerica.com","Citigroup":"citi.com",
+  "Fannie Mae":"fanniemae.com","Wells Fargo":"wellsfargo.com","Goldman Sachs":"goldmansachs.com",
+  "Morgan Stanley":"morganstanley.com","Freddie Mac":"freddiemac.com","MetLife":"metlife.com",
+  "Prudential Financial":"prudential.com","American Express":"americanexpress.com",
+  "Capital One Financial":"capitalone.com","Allstate":"allstate.com","Progressive":"progressive.com",
+  "Travelers Companies":"travelers.com","TIAA":"tiaa.org","Northwestern Mutual":"northwesternmutual.com",
+  "USAA":"usaa.com","Liberty Mutual Insurance":"libertymutual.com","Hartford Financial Services":"thehartford.com",
+  "State Farm Insurance":"statefarm.com","Visa":"visa.com","Mastercard":"mastercard.com",
+  "BlackRock":"blackrock.com","Charles Schwab":"schwab.com","Fidelity National Info (FIS)":"fisglobal.com",
+  "Fiserv":"fiserv.com","PayPal":"paypal.com",
+  "Netflix":"netflix.com","Disney":"disney.com","Paramount / Skydance":"paramount.com",
+  "Spotify":"spotify.com","BuzzFeed":"buzzfeed.com","Vice Media":"vice.com",
+  "Warner Bros. Discovery":"wbd.com",
+};
+
+function logoUrl(name) {
+  const d = DOMAINS[name];
+  return d ? `https://www.google.com/s2/favicons?domain=${d}&sz=64` : null;
+}
+function monogram(name) {
+  const m = name.replace(/[^A-Za-z ]/g, "").trim().split(/\s+/);
+  return (m[0]?.[0] || "").toUpperCase();
+}
+function fmtK(n) {
+  if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
+  if (n >= 1e5) return Math.round(n / 1000) + "K";
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+  return String(n);
+}
+function cutsDisp(c) { return c.cuts === 0 ? "—" : fmtK(c.cuts); }
+function pctInfo(c) {
+  if (c.cuts === 0) return { d: "—", v: null };
+  if (c.pctWf === 0) return { d: "<1%", v: 0.6 };
+  return { d: c.pctWf + "%", v: c.pctWf };
+}
+
+function Masthead() {
+  return (
+    <header className="masthead">
+      <div className="mast-top">
+        <span className="kicker">Workforce Intelligence</span>
+        <span className="kicker dim">Fortune 500 · 2020 — Mid 2026</span>
+      </div>
+      <div className="mast-main">
+        <h1 className="mast-title">The AI-Era<br />Workforce Tracker</h1>
+        <p className="dek">
+          Charting the great correction across <em>Tech</em>, <em>Finance</em>, and <em>Media</em> —
+          where headcount has gone since ChatGPT, and how much of it the companies themselves
+          now attribute to artificial intelligence.
+        </p>
+      </div>
+      <div className="mast-rule"></div>
+    </header>
+  );
+}
+
+function KpiRow({ items }) {
+  return (
+    <section className="kpi-row">
+      {items.map((k, i) =>
+        <div key={i} className={"kpi tone-" + k.tone}>
+          <div className="kpi-label">{k.label}</div>
+          <div className="kpi-value">
+            {k.pre && <span className="kpi-affix">{k.suffix}</span>}
+            <span className="kpi-num">{k.value}</span>
+            {!k.pre && k.suffix && <span className="kpi-affix">{k.suffix}</span>}
+          </div>
+          <div className="kpi-note">{k.note}</div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function Charts() {
+  return (
+    <section className="charts">
+      <figure className="chart-card">
+        <figcaption>
+          <h3>Annual tech layoffs</h3>
+          <span className="cap-sub">Thousands of roles · total vs. AI-attributed</span>
+        </figcaption>
+        <BarChart data={window.BARS} />
+        <div className="legend">
+          <span className="lg"><i className="sw sw-total"></i>Total tech cuts</span>
+          <span className="lg"><i className="sw sw-ai"></i>AI-attributed</span>
+        </div>
+      </figure>
+      <figure className="chart-card">
+        <figcaption>
+          <h3>AI's rising share</h3>
+          <span className="cap-sub">AI-attributed cuts as % of all US layoffs</span>
+        </figcaption>
+        <LineChart data={window.LINE} />
+        <div className="legend">
+          <span className="lg"><i className="sw sw-line"></i>1% in 2023 → 40% by May 2026</span>
+        </div>
+      </figure>
+    </section>
+  );
+}
+
+function AiBadge({ ai, note }) {
+  const cls = ai === "Yes" ? "yes" : ai === "Partial" ? "partial" : "no";
+  return (
+    <span className={"badge badge-" + cls}>
+      <i className="dot"></i>{ai}{note && <em>{note}</em>}
+    </span>
+  );
+}
+
+function PctCell({ pct }) {
+  if (pct.v === null) return <span className="pct-na">—</span>;
+  const w = Math.min(100, pct.v / 85 * 100);
+  return (
+    <div className="pct">
+      <span className="pct-num">{pct.d}</span>
+      <span className="pct-bar"><i style={{ width: w + "%" }}></i></span>
+    </div>
+  );
+}
+
+const COLS = [
+  { key: "name",   label: "Company",     align: "left"  },
+  { key: "sector", label: "Sector",      align: "left"  },
+  { key: "hc0",    label: "HC 2020",     align: "right" },
+  { key: "hc1",    label: "HC 2022",     align: "right" },
+  { key: "hc2",    label: "HC 2024",     align: "right" },
+  { key: "hc3",    label: "HC 2026",     align: "right" },
+  { key: "cuts",   label: "Cuts '23–26", align: "right" },
+  { key: "pct",    label: "% Workforce", align: "left"  },
+  { key: "peak",   label: "Peak Event",  align: "left"  },
+  { key: "ai",     label: "AI Link",     align: "left"  },
+];
+
+function sortVal(c, key) {
+  switch (key) {
+    case "name": case "sector": case "peak": return c[key].toLowerCase();
+    case "hc0": return c.hc2020;
+    case "hc1": return c.hc2022;
+    case "hc2": return c.hc2024;
+    case "hc3": return c.hc2026 ?? 0;
+    case "cuts": return c.cuts;
+    case "pct":  return c.cuts === 0 ? -1 : c.pctWf;
+    case "ai":   return AI_RANK[c.ai];
+    default: return 0;
+  }
+}
+
+function Table() {
+  const [sector, setSector] = useState("All");
+  const [q, setQ] = useState("");
+  const [sort, setSort] = useState({ key: "cuts", dir: -1 });
+
+  const rows = useMemo(() => {
+    let r = window.COMPANIES.filter(c =>
+      (sector === "All" || c.sector === sector) &&
+      (q.trim() === "" || c.name.toLowerCase().includes(q.trim().toLowerCase()))
+    );
+    return [...r].sort((a, b) => {
+      const av = sortVal(a, sort.key), bv = sortVal(b, sort.key);
+      if (av < bv) return -sort.dir;
+      if (av > bv) return sort.dir;
+      return 0;
+    });
+  }, [sector, q, sort]);
+
+  const toggle = key =>
+    setSort(s => s.key === key ? { key, dir: -s.dir } : { key, dir: (key === "name" || key === "sector") ? 1 : -1 });
+
+  const counts = window.COMPANIES.reduce(
+    (m, c) => (m[c.sector] = (m[c.sector] || 0) + 1, m),
+    { All: window.COMPANIES.length }
+  );
+
+  return (
+    <section className="table-block">
+      <div className="table-bar">
+        <h2 className="section-h">Company ledger</h2>
+        <div className="controls">
+          <div className="pills">
+            {SECTORS.map(s =>
+              <button key={s} className={"pill" + (sector === s ? " on" : "")} onClick={() => setSector(s)}>
+                {s}<span className="pill-n">{counts[s]}</span>
+              </button>
+            )}
+          </div>
+          <div className="search">
+            <svg viewBox="0 0 16 16" width="14" height="14">
+              <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.6" />
+            </svg>
+            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search company…" />
+            {q && <button className="clear" onClick={() => setQ("")}>×</button>}
+          </div>
+        </div>
+      </div>
+
+      <div className="table-scroll">
+        <table className="ledger">
+          <thead>
+            <tr>
+              {COLS.map(col =>
+                <th key={col.key}
+                    className={"al-" + col.align + (sort.key === col.key ? " sorted" : "")}
+                    onClick={() => toggle(col.key)}>
+                  <span>
+                    {col.label}
+                    <i className={"caret" + (sort.key === col.key ? (sort.dir === 1 ? " up" : " down") : "")}></i>
+                  </span>
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(c =>
+              <tr key={c.name}>
+                <td>
+                  <div className="c-name-inner">
+                    <span className="logo-chip">
+                      <span className="mono-letter">{monogram(c.name)}</span>
+                      {logoUrl(c.name) &&
+                        <img src={logoUrl(c.name)} alt="" loading="lazy"
+                          onLoad={e => { const m = e.target.previousSibling; if (m) m.style.display = "none"; }}
+                          onError={e => e.target.remove()} />}
+                    </span>
+                    <span className="cn-name">{c.name}</span>
+                  </div>
+                </td>
+                <td><span className={"sec sec-" + c.sector.toLowerCase()}>{c.sector}</span></td>
+                <td className="num">{fmtK(c.hc2020)}</td>
+                <td className="num">{fmtK(c.hc2022)}</td>
+                <td className="num">{fmtK(c.hc2024)}</td>
+                <td className="num">{c.hc2026 ? fmtK(c.hc2026) : "—"}</td>
+                <td className="num strong">{cutsDisp(c)}</td>
+                <td><PctCell pct={pctInfo(c)} /></td>
+                <td className="c-peak">{c.peak}</td>
+                <td><AiBadge ai={c.ai} note={c.aiNote} /></td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        {rows.length === 0 && <div className="empty">No companies match "{q}".</div>}
+      </div>
+
+      <div className="table-foot">
+        Showing <b>{rows.length}</b> of {window.COMPANIES.length} firms
+        {sector !== "All" && <span> · {sector}</span>}
+        <span className="legend-inline">
+          <span className="lg"><span className="badge badge-yes mini"><i className="dot"></i>Yes</span> firm cites AI</span>
+          <span className="lg"><span className="badge badge-partial mini"><i className="dot"></i>Partial</span> mixed signals</span>
+          <span className="lg"><span className="badge badge-no mini"><i className="dot"></i>No</span> not AI-linked</span>
+        </span>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="page-foot">
+      <div className="src">
+        <span className="src-label">Sources</span>
+        {window.SOURCES.map((s, i) => <span key={i} className="src-item">{s}</span>)}
+      </div>
+      <div className="disclaimer">
+        Headcount figures from annual filings; cuts aggregate announced reductions 2023–H1 2026.
+        AI-attribution reflects company statements and credible reporting — not all reductions are AI-driven.
+      </div>
+    </footer>
+  );
+}
+
+function App() {
+  return (
+    <div className="page">
+      <Masthead />
+      <KpiRow items={window.KPIS} />
+      <Charts />
+      <Table />
+      <Footer />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
